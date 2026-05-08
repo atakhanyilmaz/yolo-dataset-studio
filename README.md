@@ -4,6 +4,9 @@ YOLO tabanlı nesne tespiti projeleri için uçtan uca veri hazırlama araç set
 Video'dan frame çekme, otomatik etiketleme ve veri artırma işlemlerini tek arayüzde sunan PyQt5 masaüstü uygulaması.
 
 ---
+<img width="1919" height="374" alt="image" src="https://github.com/user-attachments/assets/5ac047c5-9331-4d5b-91b7-dda118f5ff4e" />
+<img width="1915" height="677" alt="image" src="https://github.com/user-attachments/assets/aee76832-9f67-4bd2-8fa0-9b8ea021b77e" />
+<img width="1919" height="374" alt="image" src="https://github.com/user-attachments/assets/02a1b107-06cc-4504-9d9c-077b8bf3e384" />
 
 ## Özellikler
 
