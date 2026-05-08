@@ -1,0 +1,50 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# PyInstaller
+dist/
+build/
+*.spec
+
+# Model weights (large binary files — place in weights/ locally)
+*.pt
+*.pth
+*.onnx
+*.engine
+
+# Dataset images & labels (generated locally, not versioned)
+datasets/
+results/
+runs/
+
+# Reports & augmentation output
+*.png
+*.jpg
+*.jpeg
+!assets/*.png
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log

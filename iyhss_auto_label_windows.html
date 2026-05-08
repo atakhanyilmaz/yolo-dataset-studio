@@ -1,0 +1,651 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;color:var(--color-text-primary)}
+.tabs{display:flex;gap:0;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:1.5rem}
+.tab{padding:10px 18px;cursor:pointer;font-size:13px;color:var(--color-text-secondary);border-bottom:2px solid transparent;transition:all .15s}
+.tab.active{color:var(--color-text-primary);border-bottom:2px solid var(--color-text-primary);font-weight:500}
+.tab:hover:not(.active){color:var(--color-text-primary);background:var(--color-background-secondary)}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.field-row.triple{grid-template-columns:1fr 1fr 1fr}
+.field{display:flex;flex-direction:column;gap:4px}
+label{font-size:12px;color:var(--color-text-secondary);font-weight:500}
+input[type=text],input[type=number],select{width:100%;padding:6px 10px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary)}
+.section-title{font-size:11px;font-weight:500;color:var(--color-text-secondary);margin:1rem 0 .5rem;text-transform:uppercase;letter-spacing:.04em}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.toggle-row:last-child{border-bottom:none}
+.toggle{position:relative;width:36px;height:20px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.slider-t{position:absolute;inset:0;background:var(--color-border-secondary);border-radius:10px;transition:.2s}
+.slider-t:before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked+.slider-t{background:#3266ad}
+.toggle input:checked+.slider-t:before{transform:translateX(16px)}
+.codebox{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:1rem;font-family:var(--font-mono);font-size:12px;white-space:pre-wrap;word-break:break-all;color:var(--color-text-primary);line-height:1.6;max-height:400px;overflow-y:auto}
+.copy-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;font-size:12px;cursor:pointer;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);margin-bottom:8px}
+.copy-btn:hover{background:var(--color-background-secondary)}
+.copy-btn:active{transform:scale(0.98)}
+.gen-btn{padding:8px 20px;font-size:13px;cursor:pointer;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-text-primary);color:var(--color-background-primary);font-weight:500}
+.gen-btn:hover{opacity:.85}
+.step{display:flex;gap:12px;margin-bottom:1rem}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0;margin-top:2px}
+.step-content{flex:1}
+.step-title{font-size:13px;font-weight:500;margin-bottom:6px}
+.badge{display:inline-block;padding:2px 8px;border-radius:var(--border-radius-md);font-size:11px;font-weight:500;margin-left:6px}
+.badge-blue{background:#e6f1fb;color:#185fa5}
+.badge-green{background:#eaf3de;color:#3b6d11}
+.badge-amber{background:#faeeda;color:#854f0b}
+.badge-red{background:#fcebeb;color:#a32d2d}
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+.metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem 1rem}
+.metric-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.metric-val{font-size:22px;font-weight:500}
+.class-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.class-row:last-child{border-bottom:none}
+.color-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.bar-bg{flex:1;height:8px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .4s}
+.class-count{font-size:12px;color:var(--color-text-secondary);min-width:40px;text-align:right}
+textarea{width:100%;min-height:120px;padding:8px 10px;font-size:12px;font-family:var(--font-mono);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);resize:vertical}
+.subtab-bar{display:flex;gap:8px;margin-bottom:8px}
+.subtab{padding:5px 14px;font-size:12px;cursor:pointer;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary)}
+.subtab.active{background:var(--color-text-primary);color:var(--color-background-primary)}
+.notice{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:#faeeda;border:0.5px solid #e8c97a;border-radius:var(--border-radius-md);margin-bottom:1rem;font-size:12px;color:#854f0b;line-height:1.5}
+</style>
+
+<h2 class="sr-only">IYHSS Otomatik Etiketleme Dashboard — Windows / RTX 4060 için yapılandırma, kod üretme, kurulum ve rapor sekmeleri.</h2>
+
+<div style="padding:1rem 0">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:1.5rem">
+  <i class="ti ti-cpu" aria-hidden="true" style="font-size:22px;color:var(--color-text-secondary)"></i>
+  <div>
+    <div style="font-size:16px;font-weight:500">IYHSS Auto-Label Dashboard</div>
+    <div style="font-size:12px;color:var(--color-text-secondary)">yolo26s · Windows · RTX 4060 CUDA</div>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <span class="badge badge-blue"><i class="ti ti-brand-windows" aria-hidden="true"></i> MSI Windows</span>
+    <span class="badge badge-green"><i class="ti ti-bolt" aria-hidden="true"></i> RTX 4060</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('config')"><i class="ti ti-settings" aria-hidden="true"></i> Config</div>
+  <div class="tab" onclick="showTab('code')"><i class="ti ti-code" aria-hidden="true"></i> Kod Üret</div>
+  <div class="tab" onclick="showTab('setup')"><i class="ti ti-terminal" aria-hidden="true"></i> Kurulum</div>
+  <div class="tab" onclick="showTab('report')"><i class="ti ti-chart-bar" aria-hidden="true"></i> Rapor</div>
+</div>
+
+<!-- CONFIG -->
+<div id="panel-config" class="panel active">
+  <div class="card">
+    <div class="section-title">Model ayarları</div>
+    <div class="field" style="margin-bottom:12px">
+      <label>Model ağırlık yolu (Windows)</label>
+      <input type="text" id="model_path" value="C:\Users\Atakan\Documents\iyhss\weights\yolo26s\best.pt">
+    </div>
+    <div class="field-row triple">
+      <div class="field"><label>Görsel boyutu</label><input type="number" id="img_size" value="640"></div>
+      <div class="field"><label>Conf eşiği</label><input type="number" id="conf" value="0.5" step="0.05" min="0.1" max="1"></div>
+      <div class="field"><label>IOU eşiği</label><input type="number" id="iou" value="0.45" step="0.05" min="0.1" max="1"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Device</label>
+        <select id="device"><option value="cuda" selected>cuda (RTX 4060)</option><option value="cpu">cpu</option></select>
+      </div>
+      <div class="field"><label>Warm-up görsel sayısı</label><input type="number" id="warmup" value="5"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Klasör ayarları (Windows yolu)</div>
+    <div class="field" style="margin-bottom:12px">
+      <label>Girdi klasörü — ham görseller</label>
+      <input type="text" id="input_dir" value="C:\Users\Atakan\datasets\to_label\images">
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>Çıktı kök klasörü</label>
+      <input type="text" id="out_dir" value="C:\Users\Atakan\results\auto_label">
+    </div>
+    <div class="field-row triple">
+      <div class="field"><label>TXT alt klasörü</label><input type="text" id="txt_sub" value="labels_txt"></div>
+      <div class="field"><label>JSON alt klasörü</label><input type="text" id="json_sub" value="labels_json"></div>
+      <div class="field"><label>Annotated alt klasörü</label><input type="text" id="ann_sub" value="annotated"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Çıktı seçenekleri</div>
+    <div class="toggle-row"><span style="font-size:13px">YOLO .txt dosyaları üret</span>
+      <label class="toggle"><input type="checkbox" id="save_txt" checked><span class="slider-t"></span></label></div>
+    <div class="toggle-row"><span style="font-size:13px">JSON etiket dosyaları üret</span>
+      <label class="toggle"><input type="checkbox" id="save_json" checked><span class="slider-t"></span></label></div>
+    <div class="toggle-row"><span style="font-size:13px">Bbox çizilmiş görselleri kaydet</span>
+      <label class="toggle"><input type="checkbox" id="save_ann" checked><span class="slider-t"></span></label></div>
+    <div class="toggle-row"><span style="font-size:13px">Tespit olmayan görseller için boş dosya yaz</span>
+      <label class="toggle"><input type="checkbox" id="skip_empty"><span class="slider-t"></span></label></div>
+  </div>
+
+  <button class="gen-btn" onclick="showTab('code')"><i class="ti ti-code" aria-hidden="true"></i> Kodu Üret →</button>
+</div>
+
+<!-- KOD -->
+<div id="panel-code" class="panel">
+  <div class="notice" role="note">
+    <i class="ti ti-info-circle" aria-hidden="true" style="flex-shrink:0;margin-top:1px"></i>
+    <span>Bu dashboard tarayıcıda çalışır; dosyaları doğrudan diske <strong>yazamaz</strong>.
+    Aşağıdaki <strong>İndir</strong> butonlarıyla üç dosyayı indirin ve proje klasörüne kopyalayın.</span>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+    <button class="copy-btn" onclick="copyCode('yaml')"><i class="ti ti-copy" aria-hidden="true"></i> config.yaml kopyala</button>
+    <button class="copy-btn" onclick="copyCode('py')"><i class="ti ti-copy" aria-hidden="true"></i> auto_label.py kopyala</button>
+    <button class="copy-btn" onclick="copyCode('ps1')"><i class="ti ti-copy" aria-hidden="true"></i> setup_dirs.ps1 kopyala</button>
+    <button class="copy-btn" onclick="dlCode('yaml')"><i class="ti ti-download" aria-hidden="true"></i> config.yaml indir</button>
+    <button class="copy-btn" onclick="dlCode('py')"><i class="ti ti-download" aria-hidden="true"></i> auto_label.py indir</button>
+    <button class="copy-btn" onclick="dlCode('ps1')"><i class="ti ti-download" aria-hidden="true"></i> setup_dirs.ps1 indir</button>
+  </div>
+  <div class="subtab-bar">
+    <button class="subtab active" id="st-yaml" onclick="showSub('yaml')">config.yaml</button>
+    <button class="subtab" id="st-py" onclick="showSub('py')">auto_label.py</button>
+    <button class="subtab" id="st-ps1" onclick="showSub('ps1')">setup_dirs.ps1</button>
+  </div>
+  <div id="code-yaml" class="codebox"></div>
+  <div id="code-py" class="codebox" style="display:none"></div>
+  <div id="code-ps1" class="codebox" style="display:none"></div>
+</div>
+
+<!-- KURULUM -->
+<div id="panel-setup" class="panel">
+  <div class="notice" role="note">
+    <i class="ti ti-info-circle" aria-hidden="true" style="flex-shrink:0;margin-top:1px"></i>
+    <span>Klasör kurulumu için <strong>Kod Üret → setup_dirs.ps1 indir</strong> seçeneğini kullanın,
+    indirilen dosyayı proje klasörüne kopyalayın ve PowerShell'de <code>.\setup_dirs.ps1</code> çalıştırın.</span>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Gereksinimler</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+      <span class="badge badge-blue">Python 3.10+</span>
+      <span class="badge badge-green">CUDA 12.x</span>
+      <span class="badge badge-green">cuDNN</span>
+      <span class="badge badge-amber">PyTorch (CUDA build)</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Adım adım kurulum — Windows PowerShell</div>
+
+    <div class="step"><div class="step-num">1</div><div class="step-content">
+      <div class="step-title">Klasörleri oluştur <span class="badge badge-blue">setup_dirs.ps1</span></div>
+      <div class="codebox">cd C:\Users\Atakan\OneDrive\Documents\GitHub\iyhss_data_prepare
+.\setup_dirs.ps1</div>
+      <button class="copy-btn" style="margin-top:6px" onclick="cpTxt('cd C:\\Users\\Atakan\\OneDrive\\Documents\\GitHub\\iyhss_data_prepare\n.\\setup_dirs.ps1')"><i class="ti ti-copy" aria-hidden="true"></i> Kopyala</button>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:6px">setup_dirs.ps1 yoksa Kod Üret sekmesinden indirin.</div>
+    </div></div>
+
+    <div class="step"><div class="step-num">2</div><div class="step-content">
+      <div class="step-title">PyTorch — CUDA 12.4 build yükle <span class="badge badge-red">önce bunu yap</span></div>
+      <div class="codebox">pip uninstall torch torchvision torchaudio -y
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124</div>
+      <button class="copy-btn" style="margin-top:6px" onclick="cpTxt('pip uninstall torch torchvision torchaudio -y\npip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124')"><i class="ti ti-copy" aria-hidden="true"></i> Kopyala</button>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:6px">CUDA 12.7 driver ile cu124 wheel tam uyumludur.</div>
+    </div></div>
+
+    <div class="step"><div class="step-num">3</div><div class="step-content">
+      <div class="step-title">Diğer bağımlılıkları yükle</div>
+      <div class="codebox">pip install ultralytics pyyaml matplotlib opencv-python</div>
+      <button class="copy-btn" style="margin-top:6px" onclick="cpTxt('pip install ultralytics pyyaml matplotlib opencv-python')"><i class="ti ti-copy" aria-hidden="true"></i> Kopyala</button>
+    </div></div>
+
+    <div class="step"><div class="step-num">4</div><div class="step-content">
+      <div class="step-title">CUDA kontrolü yap</div>
+      <div class="codebox">python -c "import torch; print('CUDA:', torch.cuda.is_available()); print('GPU:', torch.cuda.get_device_name(0))"</div>
+      <button class="copy-btn" style="margin-top:6px" onclick="cpTxt('python -c \"import torch; print(\'CUDA:\', torch.cuda.is_available()); print(\'GPU:\', torch.cuda.get_device_name(0))\"')"><i class="ti ti-copy" aria-hidden="true"></i> Kopyala</button>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:6px">Beklenen çıktı: <code>CUDA: True | GPU: NVIDIA GeForce RTX 4060</code></div>
+    </div></div>
+
+    <div class="step"><div class="step-num">5</div><div class="step-content">
+      <div class="step-title">Dosyaları proje klasörüne koy</div>
+      <div class="codebox">C:\Users\Atakan\OneDrive\Documents\GitHub\iyhss_data_prepare\
+├── auto_label.py   ← Kod Üret sekmesinden indir
+├── config.yaml     ← Kod Üret sekmesinden indir
+└── setup_dirs.ps1  ← Kod Üret sekmesinden indir</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:6px">
+        Ayrıca <strong>best.pt</strong> dosyasını şuraya kopyalayın:<br>
+        <code>C:\Users\Atakan\Documents\iyhss\weights\yolo26s\best.pt</code>
+      </div>
+    </div></div>
+
+    <div class="step"><div class="step-num">6</div><div class="step-content">
+      <div class="step-title">Görselleri input klasörüne koy ve çalıştır</div>
+      <div class="codebox">cd C:\Users\Atakan\OneDrive\Documents\GitHub\iyhss_data_prepare
+python auto_label.py</div>
+      <button class="copy-btn" style="margin-top:6px" onclick="cpTxt('cd C:\\Users\\Atakan\\OneDrive\\Documents\\GitHub\\iyhss_data_prepare\npython auto_label.py')"><i class="ti ti-copy" aria-hidden="true"></i> Kopyala</button>
+    </div></div>
+  </div>
+</div>
+
+<!-- RAPOR -->
+<div id="panel-report" class="panel">
+  <div class="card">
+    <div class="section-title">JSON raporu yapıştır</div>
+    <textarea id="report-input" placeholder='{"total_images":100,"detections":{"ballistic_missile":42,"helicopter":31,"f-16":19,"drone":28},"empty_images":8,"avg_ms":8.3,"fps":120.5}'></textarea>
+    <button class="gen-btn" style="margin-top:8px" onclick="parseReport()"><i class="ti ti-chart-bar" aria-hidden="true"></i> Görüntüle</button>
+  </div>
+  <div id="report-out" style="display:none">
+    <div class="metric-grid">
+      <div class="metric"><div class="metric-label">Toplam görsel</div><div class="metric-val" id="r-total">—</div></div>
+      <div class="metric"><div class="metric-label">Toplam tespit</div><div class="metric-val" id="r-det">—</div></div>
+      <div class="metric"><div class="metric-label">FPS</div><div class="metric-val" id="r-fps">—</div></div>
+      <div class="metric"><div class="metric-label">Boş görsel</div><div class="metric-val" id="r-empty">—</div></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Sınıf dağılımı</div>
+      <div id="class-bars"></div>
+    </div>
+    <div style="position:relative;height:260px;margin-top:1rem">
+      <canvas id="det-chart" role="img" aria-label="Sınıf bazlı tespit bar grafiği"></canvas>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+var detChart=null;
+
+function showTab(t){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+t).classList.add('active');
+  document.querySelectorAll('.tab').forEach(b=>{
+    if(b.getAttribute('onclick')==="showTab('"+t+"')")b.classList.add('active');
+  });
+  if(t==='code')renderCodes();
+}
+
+function showSub(s){
+  document.getElementById('code-yaml').style.display=s==='yaml'?'block':'none';
+  document.getElementById('code-py').style.display=s==='py'?'block':'none';
+  document.getElementById('code-ps1').style.display=s==='ps1'?'block':'none';
+  document.getElementById('st-yaml').classList.toggle('active',s==='yaml');
+  document.getElementById('st-py').classList.toggle('active',s==='py');
+  document.getElementById('st-ps1').classList.toggle('active',s==='ps1');
+}
+
+function v(id){return document.getElementById(id).value;}
+function chk(id){return document.getElementById(id).checked;}
+
+function getYaml(){
+  var od=v('out_dir').replace(/\\/g,'/');
+  var id2=v('input_dir').replace(/\\/g,'/');
+  var mp=v('model_path').replace(/\\/g,'/');
+  return 'project_name: "IYHSS Auto Label"\n'
+    +'device: "'+v('device')+'"\n\n'
+    +'model:\n'
+    +'  path: "'+mp+'"\n'
+    +'  img_size: '+v('img_size')+'\n'
+    +'  conf_threshold: '+v('conf')+'\n'
+    +'  iou_threshold: '+v('iou')+'\n\n'
+    +'classes:\n'
+    +'  - ballistic_missile\n'
+    +'  - helicopter\n'
+    +'  - f-16\n'
+    +'  - drone\n\n'
+    +'class_colors:\n'
+    +'  ballistic_missile: [0, 0, 255]\n'
+    +'  helicopter:        [0, 255, 0]\n'
+    +'  f-16:              [255, 165, 0]\n'
+    +'  drone:             [255, 0, 255]\n\n'
+    +'input:\n'
+    +'  images_dir: "'+id2+'"\n'
+    +'  extensions: [".jpg", ".jpeg", ".png"]\n\n'
+    +'output:\n'
+    +'  labels_txt_dir:  "'+od+'/'+v('txt_sub')+'"\n'
+    +'  labels_json_dir: "'+od+'/'+v('json_sub')+'"\n'
+    +'  annotated_dir:   "'+od+'/'+v('ann_sub')+'"\n'
+    +'  report_dir:      "'+od+'/report"\n\n'
+    +'options:\n'
+    +'  save_txt:       '+chk('save_txt')+'\n'
+    +'  save_json:      '+chk('save_json')+'\n'
+    +'  save_annotated: '+chk('save_ann')+'\n'
+    +'  skip_empty:     '+chk('skip_empty')+'\n'
+    +'  warmup_images:  '+v('warmup');
+}
+
+function getPs1(){
+  var mp=v('model_path');
+  var mpDir=mp.lastIndexOf('\\')>0?mp.substring(0,mp.lastIndexOf('\\')):mp;
+  var od=v('out_dir');
+  var id2=v('input_dir');
+  var dirs=[
+    mpDir,
+    id2,
+    od+'\\'+v('txt_sub'),
+    od+'\\'+v('json_sub'),
+    od+'\\'+v('ann_sub'),
+    od+'\\report'
+  ];
+  var dirsStr=dirs.map(function(d){return '    "'+d+'"';}).join(',\n');
+  return '# IYHSS Auto-Label — Klasor yapisi kurulumu\n'
+    +'$dirs = @(\n'+dirsStr+'\n)\n\n'
+    +'foreach ($d in $dirs) {\n'
+    +'    New-Item -ItemType Directory -Force -Path $d | Out-Null\n'
+    +'    Write-Host "[OK] $d"\n'
+    +'}\n\n'
+    +'Write-Host ""\n'
+    +'Write-Host "UYARI: best.pt dosyanizi asagidaki klasore kopyalayin:" -ForegroundColor Yellow\n'
+    +'Write-Host "  '+mp+'" -ForegroundColor Cyan\n'
+    +'Write-Host ""\n'
+    +'Write-Host "Gorsellerinizi asagidaki klasore koyun:" -ForegroundColor Yellow\n'
+    +'Write-Host "  '+id2+'\\\" -ForegroundColor Cyan\n'
+    +'Write-Host ""\n'
+    +'Write-Host "Hazir oldugunda calistirin: python auto_label.py" -ForegroundColor Green\n';
+}
+
+function getPy(){
+return `#!/usr/bin/env python3
+"""IYHSS Otomatik Labellama ve BBox Otomasyonu — Windows / RTX 4060"""
+import os, json, time, yaml
+from pathlib import Path
+from datetime import datetime
+import cv2
+import torch
+from ultralytics import YOLO
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+CONFIG_PATH = Path(__file__).parent / "config.yaml"
+
+def load_config(path):
+    with open(path, encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+def setup_dirs(cfg):
+    for key in ['labels_txt_dir','labels_json_dir','annotated_dir','report_dir']:
+        Path(cfg['output'][key]).mkdir(parents=True, exist_ok=True)
+
+def get_images(cfg):
+    d = Path(cfg['input']['images_dir'])
+    exts = cfg['input']['extensions']
+    imgs = [p for p in d.iterdir() if p.suffix.lower() in exts]
+    imgs.sort()
+    return imgs
+
+def draw_bbox(img, det, class_colors, font_scale=0.55, thickness=2):
+    px = det['bbox_pixels']
+    x1, y1, x2, y2 = px['x1'], px['y1'], px['x2'], px['y2']
+    color = tuple(class_colors.get(det['class_name'], [255,255,255]))
+    label = f"{det['class_name']} {det['confidence']:.2f}"
+    cv2.rectangle(img, (x1,y1), (x2,y2), color, thickness)
+    (tw,th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, 1)
+    cv2.rectangle(img, (x1, y1-th-8), (x1+tw+4, y1), color, -1)
+    cv2.putText(img, label, (x1+2, y1-4),
+                cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255,255,255), 1, cv2.LINE_AA)
+    return img
+
+def save_txt(path, detections):
+    lines = []
+    for d in detections:
+        n = d['bbox_normalized']
+        lines.append(f"{d['class_id']} {n['cx']:.6f} {n['cy']:.6f} {n['w']:.6f} {n['h']:.6f}")
+    with open(path, 'w') as f:
+        f.write('\\n'.join(lines))
+
+def save_json_label(path, img_name, w, h, detections):
+    data = {"image": img_name, "width": w, "height": h, "detections": detections}
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+def generate_report(stats, cfg):
+    report_dir = Path(cfg['output']['report_dir'])
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    with open(report_dir / f"report_{ts}.json", 'w', encoding='utf-8') as f:
+        json.dump(stats, f, indent=2, ensure_ascii=False)
+
+    classes = list(stats['detections'].items())
+    if classes:
+        fig, ax = plt.subplots(figsize=(8,4))
+        names  = [c[0] for c in classes]
+        counts = [c[1] for c in classes]
+        colors_plt = ['#e24b4a','#1d9e75','#ef9f27','#7f77dd']
+        bars = ax.bar(names, counts, color=colors_plt[:len(names)], edgecolor='none')
+        ax.set_title(f"Sinif Bazli Tespit Dagilimi — {stats['total_images']} gorsel", fontsize=13)
+        ax.set_ylabel("Tespit Sayisi")
+        for bar, cnt in zip(bars, counts):
+            ax.text(bar.get_x()+bar.get_width()/2, bar.get_height()+0.3,
+                    str(cnt), ha='center', va='bottom', fontsize=11)
+        plt.tight_layout()
+        plt.savefig(report_dir / f"report_{ts}.png", dpi=150, bbox_inches='tight')
+        plt.close()
+
+    total_det = sum(stats['detections'].values())
+    rows = ''.join(f"<tr><td>{k}</td><td>{v}</td></tr>" for k,v in stats['detections'].items())
+    html = f"""<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8">
+<title>IYHSS Auto-Label Rapor {ts}</title>
+<style>
+body{{font-family:sans-serif;max-width:860px;margin:2rem auto;color:#222;padding:0 1rem}}
+h1{{font-size:20px;margin-bottom:1rem}}
+.metrics{{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:1.5rem}}
+.m{{background:#f5f5f5;border-radius:8px;padding:12px 20px;text-align:center;min-width:100px}}
+.m strong{{display:block;font-size:26px;font-weight:600}}
+.m span{{font-size:12px;color:#666}}
+table{{border-collapse:collapse;width:100%}}
+td,th{{padding:8px 14px;border:1px solid #e0e0e0;font-size:13px}}
+th{{background:#f5f5f5;font-weight:500}}
+img{{max-width:100%;margin-top:1.5rem;border-radius:8px}}
+</style></head><body>
+<h1>IYHSS Auto-Label Rapor <small style="font-size:13px;color:#888">{ts}</small></h1>
+<div class="metrics">
+  <div class="m"><strong>{stats['total_images']}</strong><span>Gorsel</span></div>
+  <div class="m"><strong>{total_det}</strong><span>Toplam Tespit</span></div>
+  <div class="m"><strong>{stats.get('fps',0):.1f}</strong><span>FPS</span></div>
+  <div class="m"><strong>{stats.get('avg_ms',0):.1f}ms</strong><span>Ort. Sure</span></div>
+  <div class="m"><strong>{stats['empty_images']}</strong><span>Bos Gorsel</span></div>
+</div>
+<table><tr><th>Sinif</th><th>Tespit Sayisi</th></tr>{rows}</table>
+<img src="report_{ts}.png" alt="Sinif dagilimi grafigi">
+</body></html>"""
+    with open(report_dir / f"report_{ts}.html", 'w', encoding='utf-8') as f:
+        f.write(html)
+
+    print(f"[Rapor] {report_dir}\\\\report_{ts}.*")
+
+def main():
+    cfg = load_config(CONFIG_PATH)
+    cfg['model']['path'] = str(Path(cfg['model']['path']))
+    setup_dirs(cfg)
+
+    print(f"[GPU] CUDA: {torch.cuda.is_available()}")
+    if torch.cuda.is_available():
+        print(f"[GPU] {torch.cuda.get_device_name(0)}")
+
+    model = YOLO(cfg['model']['path'])
+    model.to(cfg['device'])
+
+    class_names  = cfg['classes']
+    class_colors = {k: v for k,v in cfg['class_colors'].items()}
+
+    images = get_images(cfg)
+    if not images:
+        print("[Hata] Gorsel bulunamadi:", cfg['input']['images_dir'])
+        return
+
+    print(f"[Basliyor] {len(images)} gorsel isleniyor...")
+    warmup_n = cfg['options'].get('warmup_images', 5)
+
+    stats = {
+        'total_images': len(images),
+        'detections': {c: 0 for c in class_names},
+        'empty_images': 0,
+        'fps': 0.0,
+        'avg_ms': 0.0
+    }
+
+    inf_times = []
+
+    for idx, img_path in enumerate(images):
+        img = cv2.imread(str(img_path))
+        if img is None:
+            print(f"  [Uyari] Okunamadi: {img_path.name}")
+            continue
+        h, w = img.shape[:2]
+
+        t0 = time.perf_counter()
+        results = model(
+            img,
+            imgsz=cfg['model']['img_size'],
+            conf=cfg['model']['conf_threshold'],
+            iou=cfg['model']['iou_threshold'],
+            verbose=False
+        )[0]
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+
+        if idx >= warmup_n:
+            inf_times.append(elapsed_ms)
+
+        detections = []
+        ann_img = img.copy()
+
+        for box in results.boxes:
+            cls_id   = int(box.cls[0])
+            cls_name = class_names[cls_id] if cls_id < len(class_names) else str(cls_id)
+            conf     = float(box.conf[0])
+            x1, y1, x2, y2 = [int(v) for v in box.xyxy[0]]
+            cx = ((x1+x2)/2)/w;  cy = ((y1+y2)/2)/h
+            bw = (x2-x1)/w;      bh = (y2-y1)/h
+
+            det = {
+                "class_id":   cls_id,
+                "class_name": cls_name,
+                "confidence": round(conf, 4),
+                "bbox_normalized": {
+                    "cx": round(cx,6), "cy": round(cy,6),
+                    "w":  round(bw,6), "h":  round(bh,6)
+                },
+                "bbox_pixels": {"x1":x1,"y1":y1,"x2":x2,"y2":y2}
+            }
+            detections.append(det)
+            stats['detections'][cls_name] = stats['detections'].get(cls_name,0) + 1
+
+            if cfg['options']['save_annotated']:
+                draw_bbox(ann_img, det, class_colors)
+
+        stem = img_path.stem
+        has_det = len(detections) > 0
+        write = has_det or not cfg['options']['skip_empty']
+
+        if cfg['options']['save_txt'] and write:
+            save_txt(Path(cfg['output']['labels_txt_dir']) / f"{stem}.txt", detections)
+
+        if cfg['options']['save_json'] and write:
+            save_json_label(
+                Path(cfg['output']['labels_json_dir']) / f"{stem}.json",
+                img_path.name, w, h, detections
+            )
+
+        if cfg['options']['save_annotated']:
+            cv2.imwrite(str(Path(cfg['output']['annotated_dir']) / img_path.name), ann_img)
+
+        if not has_det:
+            stats['empty_images'] += 1
+
+        if (idx+1) % 10 == 0 or idx == len(images)-1:
+            print(f"  [{idx+1}/{len(images)}] {img_path.name} — "
+                  f"{len(detections)} tespit, {elapsed_ms:.1f}ms")
+
+    if inf_times:
+        avg = sum(inf_times)/len(inf_times)
+        stats['avg_ms'] = round(avg, 2)
+        stats['fps']    = round(1000/avg, 2)
+
+    generate_report(stats, cfg)
+
+    print(f"\\n[Tamamlandi]")
+    print(f"  Gorsel: {stats['total_images']} | Bos: {stats['empty_images']}")
+    print(f"  FPS: {stats['fps']} | Ort. sure: {stats['avg_ms']}ms")
+    print(f"  Tespit: {stats['detections']}")
+
+if __name__ == "__main__":
+    main()
+`;
+}
+
+function renderCodes(){
+  document.getElementById('code-yaml').textContent=getYaml();
+  document.getElementById('code-py').textContent=getPy();
+  document.getElementById('code-ps1').textContent=getPs1();
+}
+
+function cpTxt(t){
+  navigator.clipboard.writeText(t).then(()=>{
+    var btn=event.target.closest('button');
+    var orig=btn.innerHTML;
+    btn.innerHTML='<i class="ti ti-check" aria-hidden="true"></i> Kopyalandı!';
+    setTimeout(()=>btn.innerHTML=orig,1500);
+  });
+}
+
+function copyCode(t){
+  var txt=t==='yaml'?getYaml():t==='py'?getPy():getPs1();
+  navigator.clipboard.writeText(txt).then(()=>{
+    var btn=event.target.closest('button');
+    var orig=btn.innerHTML;
+    btn.innerHTML='<i class="ti ti-check" aria-hidden="true"></i> Kopyalandı!';
+    setTimeout(()=>btn.innerHTML=orig,1500);
+  });
+}
+
+function dlCode(t){
+  var txt=t==='yaml'?getYaml():t==='py'?getPy():getPs1();
+  var fn=t==='yaml'?'config.yaml':t==='py'?'auto_label.py':'setup_dirs.ps1';
+  var a=document.createElement('a');
+  a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(txt);
+  a.download=fn;a.click();
+}
+
+function parseReport(){
+  var raw=document.getElementById('report-input').value.trim();
+  if(!raw){alert('JSON yapıştırın.');return;}
+  var d;
+  try{d=JSON.parse(raw);}catch(e){alert('Geçersiz JSON: '+e.message);return;}
+  document.getElementById('r-total').textContent=d.total_images??'—';
+  var tot=Object.values(d.detections||{}).reduce((a,b)=>a+b,0);
+  document.getElementById('r-det').textContent=tot;
+  document.getElementById('r-fps').textContent=d.fps!=null?parseFloat(d.fps).toFixed(1):'—';
+  document.getElementById('r-empty').textContent=d.empty_images??'—';
+  var barsEl=document.getElementById('class-bars');
+  barsEl.innerHTML='';
+  var dets=d.detections||{};
+  var maxV=Math.max(...Object.values(dets),1);
+  var colors=['#e24b4a','#1d9e75','#ef9f27','#7f77dd'];
+  Object.keys(dets).forEach((k,i)=>{
+    var pct=Math.round((dets[k]/maxV)*100);
+    barsEl.innerHTML+=`<div class="class-row">
+      <div class="color-dot" style="background:${colors[i%4]}"></div>
+      <span style="font-size:13px;min-width:140px">${k}</span>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${colors[i%4]}"></div></div>
+      <span class="class-count">${dets[k]}</span>
+    </div>`;
+  });
+  if(detChart){detChart.destroy();detChart=null;}
+  var ctx=document.getElementById('det-chart').getContext('2d');
+  detChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:Object.keys(dets),
+      datasets:[{label:'Tespit',data:Object.values(dets),
+        backgroundColor:colors.slice(0,Object.keys(dets).length),borderRadius:6}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+  document.getElementById('report-out').style.display='block';
+}
+
+renderCodes();
+</script>
