@@ -1,11 +1,18 @@
+import ctypes
 import random
 from pathlib import Path
 
 import cv2
 
 
+def _safe_path(path):
+    buf = ctypes.create_unicode_buffer(32768)
+    ctypes.windll.kernel32.GetShortPathNameW(str(path), buf, 32768)
+    return buf.value or str(path)
+
+
 def get_video_info(video_path):
-    cap = cv2.VideoCapture(str(video_path))
+    cap = cv2.VideoCapture(_safe_path(video_path))
     if not cap.isOpened():
         return None
     total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -18,7 +25,7 @@ def get_video_info(video_path):
 
 
 def get_preview_frames(video_path, n=6):
-    cap = cv2.VideoCapture(str(video_path))
+    cap = cv2.VideoCapture(_safe_path(video_path))
     if not cap.isOpened():
         return []
     total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -37,7 +44,7 @@ def get_preview_frames(video_path, n=6):
 
 
 def run_extraction(cfg, log_cb, progress_cb, stop_flag):
-    cap = cv2.VideoCapture(str(cfg['video_path']))
+    cap = cv2.VideoCapture(_safe_path(cfg['video_path']))
     if not cap.isOpened():
         log_cb(f"[Hata] Video açılamadı: {cfg['video_path']}")
         return 0

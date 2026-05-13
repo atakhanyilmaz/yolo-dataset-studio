@@ -19,13 +19,14 @@ def parse_yolo_txt(txt_path):
     return bboxes, class_ids
 
 
-def get_image_label_pairs(input_dir):
+def get_image_label_pairs(input_dir, labels_dir=None):
     d = Path(input_dir)
+    ld = Path(labels_dir) if labels_dir else None
     exts = {'.jpg', '.jpeg', '.png'}
     pairs = []
     for img_path in sorted(d.iterdir()):
         if img_path.suffix.lower() in exts:
-            txt_path = img_path.with_suffix('.txt')
+            txt_path = (ld / img_path.stem).with_suffix('.txt') if ld else img_path.with_suffix('.txt')
             if txt_path.exists():
                 pairs.append((img_path, txt_path))
     return pairs
@@ -163,13 +164,26 @@ def run_augmentation(cfg, log_cb, progress_cb, stop_flag):
         log_cb("[Hata] Hicbir augmentation secilmedi.")
         return
 
-    pairs = get_image_label_pairs(cfg['input_dir'])
+    input_dir  = str(Path(cfg['input_dir']).resolve())
+    labels_dir = str(Path(cfg['labels_dir']).resolve()) if cfg.get('labels_dir') else None
+    output_dir = str(Path(cfg['output_dir']).resolve())
+
+    if not Path(input_dir).exists():
+        log_cb(f"[Hata] Gorsel klasoru bulunamadi: {input_dir}")
+        return
+    if labels_dir and not Path(labels_dir).exists():
+        log_cb(f"[Hata] Etiket klasoru bulunamadi: {labels_dir}")
+        return
+
+    pairs = get_image_label_pairs(input_dir, labels_dir)
     if not pairs:
-        log_cb(f"[Hata] Gorsel-etiket cifti bulunamadi: {cfg['input_dir']}")
+        log_cb(f"[Hata] Gorsel-etiket cifti bulunamadi: {input_dir}")
         return
 
     multiplier = cfg.get('multiplier', 5)
     total = len(pairs) * multiplier
+    cfg = dict(cfg)
+    cfg['output_dir'] = output_dir
     done = 0
 
     log_cb(f"[Basliyor] {len(pairs)} gorsel x {multiplier} = {total} augmented kopya")
@@ -188,11 +202,31 @@ def run_augmentation(cfg, log_cb, progress_cb, stop_flag):
 
         bboxes, class_ids = parse_yolo_txt(txt_path)
 
+        # clip bboxes to [0,1] and remove degenerate ones
+        clean_bboxes, clean_ids = [], []
+        for bbox, cid in zip(bboxes, class_ids):
+            cx, cy, w, h = bbox
+            cx = max(0.0, min(1.0, cx))
+            cy = max(0.0, min(1.0, cy))
+            w  = max(0.001, min(1.0, w))
+            h  = max(0.001, min(1.0, h))
+            x1 = max(0.0, cx - w / 2)
+            y1 = max(0.0, cy - h / 2)
+            x2 = min(1.0, cx + w / 2)
+            y2 = min(1.0, cy + h / 2)
+            if x2 - x1 > 0.001 and y2 - y1 > 0.001:
+                clean_bboxes.append([
+                    (x1 + x2) / 2, (y1 + y2) / 2,
+                    x2 - x1, y2 - y1
+                ])
+                clean_ids.append(cid)
+        bboxes, class_ids = clean_bboxes, clean_ids
+
         for i in range(multiplier):
             if stop_flag.is_set():
                 break
             try:
-                result = pipeline(image=img, bboxes=bboxes, class_labels=class_ids)
+                result = pipeline(image=img.copy(), bboxes=list(bboxes), class_labels=list(class_ids))
                 _save_augmented(result, img_path, cfg['output_dir'], done)
             except Exception as e:
                 log_cb(f"  [Uyari] {img_path.name} aug {i}: {e}")

@@ -94,7 +94,10 @@ class AugmentTab(QWidget):
         f.setSpacing(6)
 
         self.aug_input = QLineEdit(r"C:\Users\Atakan\datasets\to_label\images")
-        f.addRow("Girdi (görsel + txt):", self._browse_row(self.aug_input, is_dir=True))
+        f.addRow("Görsel klasörü:", self._browse_row(self.aug_input, is_dir=True))
+
+        self.aug_labels = QLineEdit("")
+        f.addRow("Etiket klasörü (.txt):", self._browse_row(self.aug_labels, is_dir=True))
 
         self.aug_output = QLineEdit(r"C:\Users\Atakan\results\augmented")
         f.addRow("Çıktı klasörü:", self._browse_row(self.aug_output, is_dir=True))
@@ -300,6 +303,7 @@ class AugmentTab(QWidget):
     def _collect_cfg(self):
         return {
             'input_dir': self.aug_input.text(),
+            'labels_dir': self.aug_labels.text().strip() or None,
             'output_dir': self.aug_output.text(),
             'multiplier': self.multiplier.value(),
             'geometric': {

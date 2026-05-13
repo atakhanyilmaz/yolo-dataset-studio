@@ -9,6 +9,7 @@ from ultralytics import YOLO
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+plt.switch_backend('Agg')
 
 
 def setup_dirs(cfg):
@@ -59,18 +60,22 @@ def generate_report(stats, cfg):
     with open(report_dir / f"report_{ts}.json", 'w', encoding='utf-8') as f:
         json.dump(stats, f, indent=2, ensure_ascii=False)
 
-    classes = list(stats['detections'].items())
-    if classes:
-        fig, ax = plt.subplots(figsize=(8, 4))
-        names = [c[0] for c in classes]
-        counts = [c[1] for c in classes]
-        colors_plt = ['#e24b4a', '#1d9e75', '#ef9f27', '#7f77dd']
-        bars = ax.bar(names, counts, color=colors_plt[:len(names)], edgecolor='none')
+    detected = [(k, v) for k, v in stats['detections'].items() if v > 0]
+    if detected:
+        detected.sort(key=lambda x: x[1], reverse=True)
+        names = [c[0] for c in detected]
+        counts = [c[1] for c in detected]
+        cmap = plt.get_cmap('tab20')
+        colors_plt = [cmap(i % 20) for i in range(len(names))]
+        fig_w = max(8, len(names) * 0.6)
+        fig, ax = plt.subplots(figsize=(fig_w, 5))
+        bars = ax.bar(names, counts, color=colors_plt, edgecolor='none')
         ax.set_title(f"Sinif Bazli Tespit Dagilimi — {stats['total_images']} gorsel", fontsize=13)
         ax.set_ylabel("Tespit Sayisi")
+        plt.xticks(rotation=45, ha='right', fontsize=9)
         for bar, cnt in zip(bars, counts):
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.3,
-                    str(cnt), ha='center', va='bottom', fontsize=11)
+                    str(cnt), ha='center', va='bottom', fontsize=9)
         plt.tight_layout()
         plt.savefig(report_dir / f"report_{ts}.png", dpi=150, bbox_inches='tight')
         plt.close()
@@ -224,8 +229,12 @@ def run_pipeline(cfg, log_cb, progress_cb, stop_flag):
         stats['avg_ms'] = round(avg, 2)
         stats['fps'] = round(1000 / avg, 2)
 
-    report_path = generate_report(stats, cfg)
-    log_cb(f"[Rapor] {report_path}.*")
+    try:
+        report_path = generate_report(stats, cfg)
+        log_cb(f"[Rapor] {report_path}.*")
+    except Exception as e:
+        log_cb(f"[Uyari] Rapor olusturulamadi: {e}")
+
     log_cb(f"[Tamamlandi] Gorsel: {stats['total_images']} | Bos: {stats['empty_images']}")
     log_cb(f"  FPS: {stats['fps']} | Ort. sure: {stats['avg_ms']}ms")
     log_cb(f"  Tespit: {stats['detections']}")

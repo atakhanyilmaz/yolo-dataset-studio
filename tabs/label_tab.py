@@ -7,15 +7,18 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QColor, QTextCursor, QTextCharFormat, QFont
 from PyQt5.QtCore import Qt
 
+import yaml
+from pathlib import Path
+
 from workers.label_worker import LabelWorker
 
-_CLASSES = ['ballistic_missile', 'helicopter', 'f-16', 'drone']
-_COLORS = {
-    'ballistic_missile': [0, 0, 255],
-    'helicopter': [0, 255, 0],
-    'f-16': [255, 165, 0],
-    'drone': [255, 0, 255],
-}
+_CONFIG_PATH = Path(__file__).parent.parent / "config.yaml"
+
+def _load_config():
+    with open(_CONFIG_PATH, encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+_CFG = _load_config()
 
 
 class LabelTab(QWidget):
@@ -35,13 +38,14 @@ class LabelTab(QWidget):
         paths_form = QFormLayout(paths_gb)
         paths_form.setSpacing(6)
 
-        self.input_dir = QLineEdit(r"C:\Users\Atakan\datasets\to_label\images")
+        self.input_dir = QLineEdit(_CFG['input']['images_dir'])
         paths_form.addRow("Girdi klasörü:", self._browse_row(self.input_dir, is_dir=True))
 
-        self.model_path = QLineEdit(r"C:\Users\Atakan\Documents\iyhss\weights\yolo26s\best.pt")
+        self.model_path = QLineEdit(_CFG['model']['path'])
         paths_form.addRow("Model yolu (.pt):", self._browse_row(self.model_path, flt="Model (*.pt)"))
 
-        self.output_dir = QLineEdit(r"C:\Users\Atakan\results\auto_label")
+        _out_root = str(Path(_CFG['output']['labels_txt_dir']).parent)
+        self.output_dir = QLineEdit(_out_root)
         paths_form.addRow("Çıktı kök klasörü:", self._browse_row(self.output_dir, is_dir=True))
 
         root.addWidget(paths_gb)
@@ -150,8 +154,8 @@ class LabelTab(QWidget):
                 'conf_threshold': self.conf.value(),
                 'iou_threshold': self.iou.value(),
             },
-            'classes': _CLASSES,
-            'class_colors': _COLORS,
+            'classes': _CFG['classes'],
+            'class_colors': _CFG['class_colors'],
             'input': {
                 'images_dir': self.input_dir.text(),
                 'extensions': ['.jpg', '.jpeg', '.png'],

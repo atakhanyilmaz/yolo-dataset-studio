@@ -20,10 +20,15 @@ class AugmentWorker(QThread):
 
     def run(self):
         self.stop_flag.clear()
-        run_augmentation(
-            self.cfg,
-            log_cb=self.log.emit,
-            progress_cb=lambda cur, tot: self.progress.emit(cur, tot),
-            stop_flag=self.stop_flag,
-        )
+        try:
+            run_augmentation(
+                self.cfg,
+                log_cb=self.log.emit,
+                progress_cb=lambda cur, tot: self.progress.emit(cur, tot),
+                stop_flag=self.stop_flag,
+            )
+        except Exception as e:
+            import traceback
+            self.log.emit(f"[Hata] {e}")
+            self.log.emit(traceback.format_exc())
         self.finished.emit()

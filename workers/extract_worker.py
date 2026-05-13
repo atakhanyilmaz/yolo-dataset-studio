@@ -20,13 +20,19 @@ class ExtractWorker(QThread):
 
     def run(self):
         self.stop_flag.clear()
-        saved = run_extraction(
-            self.cfg,
-            log_cb=self.log.emit,
-            progress_cb=lambda cur, tot: self.progress.emit(cur, tot),
-            stop_flag=self.stop_flag,
-        )
-        self.finished.emit(saved or 0)
+        try:
+            saved = run_extraction(
+                self.cfg,
+                log_cb=self.log.emit,
+                progress_cb=lambda cur, tot: self.progress.emit(cur, tot),
+                stop_flag=self.stop_flag,
+            )
+            self.finished.emit(saved or 0)
+        except Exception as e:
+            import traceback
+            self.log.emit(f"[Hata] {e}")
+            self.log.emit(traceback.format_exc())
+            self.finished.emit(0)
 
 
 class PreviewWorker(QThread):
@@ -37,5 +43,8 @@ class PreviewWorker(QThread):
         self.video_path = video_path
 
     def run(self):
-        frames = get_preview_frames(self.video_path, n=6)
-        self.preview_ready.emit(frames)
+        try:
+            frames = get_preview_frames(self.video_path, n=6)
+            self.preview_ready.emit(frames)
+        except Exception:
+            self.preview_ready.emit([])
