@@ -5,6 +5,7 @@ from tabs.extract_tab import ExtractTab
 from tabs.label_tab import LabelTab
 from tabs.augment_tab import AugmentTab
 from tabs.bag_converter_tab import BagConverterTab
+from tabs.camera_tab import CameraTab
 
 
 def _gpu_status():
@@ -30,6 +31,7 @@ class MainWindow(QMainWindow):
         tabs.addTab(LabelTab(),   "⬡  Auto Label")
         tabs.addTab(AugmentTab(), "⬡  Augmentation")
         tabs.addTab(BagConverterTab(), "⬡  Bag -> MP4")
+        tabs.addTab(CameraTab(), "⬡  Camera Capture")
         self.setCentralWidget(tabs)
 
         status = QStatusBar()
